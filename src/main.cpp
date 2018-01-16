@@ -1,6 +1,9 @@
 #include "main.h"
 #include "timer.h"
 #include "ball.h"
+#include "villain.h"
+#include "ground.h"
+#include <stdlib.h>
 
 using namespace std;
 
@@ -12,8 +15,10 @@ GLFWwindow *window;
 * Customizable functions *
 **************************/
 
-Ball ball1, ball2;
-
+Ball ball1;
+Villain vill[10];
+Ground ground;
+int vill_cnt = 5 , depth = 5 , screen_size = 10;
 float screen_zoom = 1, screen_center_x = 0, screen_center_y = 0;
 
 Timer t60(1.0 / 60);
@@ -27,7 +32,6 @@ void draw() {
     // use the loaded shader program
     // Don't change unless you know what you are doing
     glUseProgram (programID);
-
     // Eye - Location of camera. Don't change unless you are sure!!
     // glm::vec3 eye ( 5*cos(camera_rotation_angle*M_PI/180.0f), 0, 5*sin(camera_rotation_angle*M_PI/180.0f) );
     // Target - Where is the camera looking at.  Don't change unless you are sure!!
@@ -50,8 +54,11 @@ void draw() {
     glm::mat4 MVP;  // MVP = Projection * View * Model
 
     // Scene render
-    ball1.draw(VP);
-    ball2.draw(VP);
+    for(int i = 0 ; i < vill_cnt ; i++){
+        vill[i].draw(VP);
+    }
+    ball1.draw(VP);    
+    ground.draw(VP);
 }
 
 void tick_input(GLFWwindow *window) {
@@ -63,11 +70,8 @@ void tick_input(GLFWwindow *window) {
 }
 
 void tick_elements() {
-    ball1.tick();
-    ball2.tick();
-    if (detect_collision(ball1.bounding_box(), ball2.bounding_box())) {
-        ball1.speed = -ball1.speed;
-        ball2.speed = -ball2.speed;
+    for(int i = 0 ; i < vill_cnt ; i++){
+        vill[i].tick();
     }
 }
 
@@ -76,11 +80,20 @@ void tick_elements() {
 void initGL(GLFWwindow *window, int width, int height) {
     /* Objects should be created before any other gl function and shaders */
     // Create the models
-
-    ball1       = Ball(2, 0, COLOR_RED);
-    ball2       = Ball(-2, 0, COLOR_RED);
-    ball2.speed = -ball2.speed;
-
+    float ball_size = 1;
+    ball1       = Ball(0.0 , -screen_size + depth + ball_size, COLOR_RED,ball_size);
+    for(int i = 0 ; i < vill_cnt ; i++){  
+        float x = (((i+1)*rand()+i*584)%10000)/1000;  
+        float y = (((i+1)*rand()+i*784)%10000)/1000;
+        if (y < -(float)depth){
+            y += (float)depth + 2;
+        }
+        ball_size = 1 - (0.1*(i+1));
+        double tmp_speed = (double)(i+1)/80;
+        vill[i]       = Villain(x, y, COLOR_GREEN,ball_size);
+        vill[i].speed = -tmp_speed;
+    }
+    ground = Ground(COLOR_BLACK,screen_size,depth);
     // Create and compile our GLSL program from the shaders
     programID = LoadShaders("Sample_GL.vert", "Sample_GL.frag");
     // Get a handle for our "MVP" uniform
@@ -140,9 +153,9 @@ bool detect_collision(bounding_box_t a, bounding_box_t b) {
 }
 
 void reset_screen() {
-    float top    = screen_center_y + 4 / screen_zoom;
-    float bottom = screen_center_y - 4 / screen_zoom;
-    float left   = screen_center_x - 4 / screen_zoom;
-    float right  = screen_center_x + 4 / screen_zoom;
+    float top    = screen_center_y + screen_size / screen_zoom;
+    float bottom = screen_center_y - screen_size / screen_zoom;
+    float left   = screen_center_x - screen_size / screen_zoom;
+    float right  = screen_center_x + screen_size / screen_zoom;
     Matrices.projection = glm::ortho(left, right, bottom, top, 0.1f, 500.0f);
 }

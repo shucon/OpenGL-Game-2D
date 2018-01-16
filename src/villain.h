@@ -1,13 +1,13 @@
 #include "main.h"
 
-#ifndef BALL_H
-#define BALL_H
+#ifndef VILLAIN_H
+#define VILLAIN_H
 
 
-class Ball {
+class Villain {
 public:
-    Ball() {}
-    Ball(float x, float y, color_t color ,float size);
+    Villain() {}
+    Villain(float x, float y, color_t color ,float size);
     glm::vec3 position;
     float rotation;
     void draw(glm::mat4 VP);
@@ -19,4 +19,4 @@ private:
     VAO *object;
 };
 
-#endif // BALL_H
+#endif // VILLAIN_H

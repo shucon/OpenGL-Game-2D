@@ -1,10 +1,10 @@
-#include "ball.h"
+#include "villain.h"
 #include "main.h"
 
-Ball::Ball(float x, float y, color_t color ,float size) {
+Villain::Villain(float x, float y, color_t color ,float size) {
     this->position = glm::vec3(x, y, 0);
     this->rotation = 0;
-    speed = 0.01;
+    speed = 0.1;
     int n =100 ,i,count=0;
     static GLfloat g_vertex_buffer_data[10000];
     float angle = 360/n;
@@ -29,28 +29,27 @@ Ball::Ball(float x, float y, color_t color ,float size) {
     this->object = create3DObject(GL_TRIANGLES, 9*n, g_vertex_buffer_data, color, GL_FILL);
 }
 
-
-void Ball::draw(glm::mat4 VP) {
+void Villain::draw(glm::mat4 VP) {
     Matrices.model = glm::mat4(1.0f);
     glm::mat4 translate = glm::translate (this->position);    // glTranslatef
     glm::mat4 rotate    = glm::rotate((float) (this->rotation * M_PI / 180.0f), glm::vec3(0, 0, 1));
-    rotate          = rotate * glm::translate(glm::vec3(0, 0, 0));
+    rotate          = rotate * glm::translate(glm::vec3(0, -0.6, 0));
     Matrices.model *= (translate * rotate);
     glm::mat4 MVP = VP * Matrices.model;
     glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
     draw3DObject(this->object);
 }
 
-void Ball::set_position(float x, float y) {
+void Villain::set_position(float x, float y) {
     this->position = glm::vec3(x, y, 0);
 }
 
-void Ball::tick() {
+void Villain::tick() {
     this->position.x -= speed;
     // this->position.y -= speed;
 }
 
-bounding_box_t Ball::bounding_box() {
+bounding_box_t Villain::bounding_box() {
     float x = this->position.x, y = this->position.y;
     bounding_box_t bbox = { x, y, 0.4, 0.4 };
     return bbox;
