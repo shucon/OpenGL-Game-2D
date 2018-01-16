@@ -3,6 +3,7 @@
 #include "ball.h"
 #include "villain.h"
 #include "ground.h"
+#include "pool.h"
 #include <stdlib.h>
 
 using namespace std;
@@ -16,9 +17,10 @@ GLFWwindow *window;
 **************************/
 
 Ball ball1;
-Villain vill[10];
+Villain vill[1000];
 Ground ground;
-int vill_cnt = 5 , depth = 5 , screen_size = 10;
+Pool pool;
+int vill_cnt = 17 , depth = 5 , screen_size = 10;
 float screen_zoom = 1, screen_center_x = 0, screen_center_y = 0;
 
 Timer t60(1.0 / 60);
@@ -59,6 +61,7 @@ void draw() {
     }
     ball1.draw(VP);    
     ground.draw(VP);
+    pool.draw(VP);
 }
 
 void tick_input(GLFWwindow *window) {
@@ -85,15 +88,18 @@ void initGL(GLFWwindow *window, int width, int height) {
     for(int i = 0 ; i < vill_cnt ; i++){  
         float x = (((i+1)*rand()+i*584)%10000)/1000;  
         float y = (((i+1)*rand()+i*784)%10000)/1000;
-        if (y < -(float)depth){
-            y += (float)depth + 2;
+        int temp = (i+1)%5;
+        ball_size = 1 - (0.1*(float)temp);
+        if (y < -(float)(screen_size - depth - ball_size)){
+            y = -y ;
         }
-        ball_size = 1 - (0.1*(i+1));
-        double tmp_speed = (double)(i+1)/80;
+        double tmp_speed = (double)(i+1)/100;
         vill[i]       = Villain(x, y, COLOR_GREEN,ball_size);
+        printf("%lf\n",tmp_speed);
         vill[i].speed = -tmp_speed;
     }
     ground = Ground(COLOR_BLACK,screen_size,depth);
+    pool = Pool(COLOR_BLUE,0,-depth);
     // Create and compile our GLSL program from the shaders
     programID = LoadShaders("Sample_GL.vert", "Sample_GL.frag");
     // Get a handle for our "MVP" uniform
