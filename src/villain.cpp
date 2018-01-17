@@ -47,6 +47,13 @@ void Villain::set_position(float x, float y) {
 void Villain::tick() {
     this->position.x -= speed;
     // this->position.y -= speed;
+    if (this->position.x > 11) { // 11 = screen_size+max_size
+
+        int i = rand() % 100;   
+        float x = (((i+1)*rand()+i*584)%10000)/1000;  
+        float temp = -20 - x;
+        this->position.x = temp;
+    }
 }
 
 bounding_box_t Villain::bounding_box() {

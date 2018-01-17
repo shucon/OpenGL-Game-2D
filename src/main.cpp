@@ -20,7 +20,7 @@ Ball ball1;
 Villain vill[1000];
 Ground ground;
 Pool pool;
-int vill_cnt = 17 , depth = 5 , screen_size = 10;
+int vill_cnt = 30 , depth = 5 , screen_size = 10;
 float screen_zoom = 1, screen_center_x = 0, screen_center_y = 0;
 
 Timer t60(1.0 / 60);
@@ -59,23 +59,42 @@ void draw() {
     for(int i = 0 ; i < vill_cnt ; i++){
         vill[i].draw(VP);
     }
-    ball1.draw(VP);    
     ground.draw(VP);
     pool.draw(VP);
+    ball1.draw(VP);    
 }
 
 void tick_input(GLFWwindow *window) {
     int left  = glfwGetKey(window, GLFW_KEY_LEFT);
     int right = glfwGetKey(window, GLFW_KEY_RIGHT);
+    int up = glfwGetKey(window, GLFW_KEY_UP);
+    int down = glfwGetKey(window, GLFW_KEY_DOWN); //only for testing
     if (left) {
-        // Do something
+        ball1.tick_left();
+    }
+
+    if (right) {
+        ball1.tick_right();
+    }
+
+    if (up) {
+        if(ball1.position.y == -screen_size + depth + 1.0)
+            ball1.launch_speed = 0.4;
+        if(ball1.position.y < -screen_size + depth + 1.0)
+            ball1.launch_speed = 0.3;        
+    }
+
+    if (down) {
+        ball1.tick_down(); // only for testing
     }
 }
 
 void tick_elements() {
+
     for(int i = 0 ; i < vill_cnt ; i++){
         vill[i].tick();
     }
+    ball1.tick_up();
 }
 
 /* Initialize the OpenGL rendering properties */
@@ -90,12 +109,11 @@ void initGL(GLFWwindow *window, int width, int height) {
         float y = (((i+1)*rand()+i*784)%10000)/1000;
         int temp = (i+1)%5;
         ball_size = 1 - (0.1*(float)temp);
-        if (y < -(float)(screen_size - depth - ball_size)){
+        if (y < -(float)(screen_size - depth - 4)){
             y = -y ;
         }
-        double tmp_speed = (double)(i+1)/100;
+        double tmp_speed = (double)(i%10+1)/100;
         vill[i]       = Villain(x, y, COLOR_GREEN,ball_size);
-        printf("%lf\n",tmp_speed);
         vill[i].speed = -tmp_speed;
     }
     ground = Ground(COLOR_BLACK,screen_size,depth);

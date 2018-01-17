@@ -12,8 +12,13 @@ public:
     float rotation;
     void draw(glm::mat4 VP);
     void set_position(float x, float y);
-    void tick();
+    void tick_left();
+    void tick_right();
+    void tick_up();
+    void tick_down();
     double speed;
+    double launch_speed;
+    double gravity;
     bounding_box_t bounding_box();
 private:
     VAO *object;

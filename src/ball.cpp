@@ -4,7 +4,9 @@
 Ball::Ball(float x, float y, color_t color ,float size) {
     this->position = glm::vec3(x, y, 0);
     this->rotation = 0;
-    speed = 0.01;
+    speed = 0.1;
+    gravity = 0.01;
+    launch_speed = 0;
     int n =100 ,i,count=0;
     static GLfloat g_vertex_buffer_data[10000];
     float angle = 360/n;
@@ -45,9 +47,26 @@ void Ball::set_position(float x, float y) {
     this->position = glm::vec3(x, y, 0);
 }
 
-void Ball::tick() {
+void Ball::tick_left() {
     this->position.x -= speed;
     // this->position.y -= speed;
+}
+
+void Ball::tick_right() {
+    this->position.x += speed;
+    // this->position.y -= speed;
+}
+
+void Ball::tick_up() {
+    this->position.y += launch_speed;
+    if (position.y > -4.0)
+        launch_speed -= gravity;
+    if (position.y < -4.0)
+        position.y = -4.0;
+}
+
+void Ball::tick_down() {
+     this->position.y -= speed;
 }
 
 bounding_box_t Ball::bounding_box() {
