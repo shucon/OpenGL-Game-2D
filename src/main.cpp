@@ -22,7 +22,7 @@ Villain vill[1000];
 Ground ground;
 Pool pool;
 Plank plank[10];
-int vill_cnt = 2 , depth = 5 , screen_size = 10,plank_cnt = 0;
+int vill_cnt = 10 , depth = 5 , screen_size = 10,plank_cnt = 0;
 float screen_zoom = 1, screen_center_x = 0, screen_center_y = 0;
 
 Timer t60(1.0 / 60);
@@ -64,14 +64,16 @@ void draw() {
     ground.draw(VP);
     pool.draw(VP);
     ball1.draw(VP);    
-    plank[0].draw(VP);
+    for(int i = 0 ; i < plank_cnt ; i++){
+        plank[i].draw(VP);
+    }
 }
 
 void tick_input(GLFWwindow *window) {
     int left  = glfwGetKey(window, GLFW_KEY_LEFT);
     int right = glfwGetKey(window, GLFW_KEY_RIGHT);
     int up = glfwGetKey(window, GLFW_KEY_UP);
-    int down = glfwGetKey(window, GLFW_KEY_DOWN); //only for testing
+    // int down = glfwGetKey(window, GLFW_KEY_DOWN); //only for testing
     if (left) {
         ball1.tick_left();
     }
@@ -81,22 +83,23 @@ void tick_input(GLFWwindow *window) {
     }
 
     if (up) {
-        if(ball1.position.y == -screen_size + depth + 1.0)
+        if(ball1.position.y == -screen_size + depth + 1.0 && (ball1.position.x < -3 || ball1.position.x > 3))
             ball1.launch_speed = 0.4;
-        if(ball1.position.y < -screen_size + depth + 1.0)
-            ball1.launch_speed = 0.3;        
+        printf("%lf %lf\n",ball1.position.y,ball1.pond_bot);
+        if((float)ball1.position.y == (float)ball1.pond_bot)
+            ball1.launch_speed = 0.25;        
     }
 
-    if (down) {
-        ball1.tick_down(); // only for testing
-    }
+    // if (down) {
+    //     ball1.tick_down(); // only for testing
+    // }
 }
 
 void tick_elements() {
 
-    ball1.tick_up();
+    ball1.tick_up(pool);
     for(int i = 0 ; i < vill_cnt ; i++){
-        vill[i].tick();        
+        vill[i].tick();     
         if (detect_collision(ball1.bounding_box(), vill[i].bounding_box()) && ball1.launch_speed < 0) {
             vill[i].position.x = 11;
             ball1.launch_speed = -1.1*ball1.launch_speed;
@@ -104,7 +107,7 @@ void tick_elements() {
     }
 
     for(int i = 0 ; i < plank_cnt ; i++){
-        plank[i].tick();
+        plank[i].tick(vill[i*5].position.x , 0.9);
     }
 
 }
@@ -115,7 +118,7 @@ void initGL(GLFWwindow *window, int width, int height) {
     /* Objects should be created before any other gl function and shaders */
     // Create the models
     float ball_size = 1;
-    ball1       = Ball(0.0 , -screen_size + depth + ball_size, COLOR_RED,ball_size);
+    ball1       = Ball(-9.0 , -screen_size + depth + ball_size, COLOR_RED,ball_size);
     for(int i = 0 ; i < vill_cnt ; i++){  
         float x = (((i+1)*rand()+i*584)%10000)/1000;  
         float y = (((i+1)*rand()+i*784)%10000)/1000;
@@ -124,13 +127,14 @@ void initGL(GLFWwindow *window, int width, int height) {
         if (y < -(float)(screen_size - depth - 4)){
             y = -y ;
         }
-        // double tmp_speed = (double)(i%10+1)/100;
-        double tmp_speed = 0.001;
-        // printf("%f\n%f\n",x,y);
-        vill[i]       = Villain(2, 2, COLOR_GREEN,ball_size);
+        double tmp_speed = (double)(i%10+1)/100;
+        vill[i]       = Villain(x, y, COLOR_GREEN,ball_size);
         if (i%5 == 0){
-            // printf("plank:%f\n%f\n",x,y);
-            plank[plank_cnt]       = Plank(2, 2, COLOR_BROWN);
+            printf("%d",plank_cnt);
+            if(i%2 == 0)
+                plank[plank_cnt]       = Plank(x - ball_size*cos(30*3.141/180), y + ball_size*sin(30*3.141/180), COLOR_BROWN , 60);
+            else
+                plank[plank_cnt]       = Plank(x + ball_size*cos(30*3.141/180), y + ball_size*sin(30*3.141/180), COLOR_BROWN , -60);                
             plank[plank_cnt].speed = tmp_speed;
             plank_cnt++;
         }

@@ -57,12 +57,20 @@ void Ball::tick_right() {
     // this->position.y -= speed;
 }
 
-void Ball::tick_up() {
+void Ball::tick_up(Pool pool) {
     this->position.y += launch_speed;
-    if (position.y > -4.0)
-        launch_speed -= gravity;
-    if (position.y < -4.0)
+    launch_speed -= gravity;
+    if (position.y < -4.0 && (position.x < pool.position.x - (double)pool.size) && (position.x > pool.position.x + (double)pool.size) )
         position.y = -4.0;
+    else if (position.y < -4.0 && (position.x > pool.position.x - (double)pool.size) && (position.x < pool.position.x + (double)pool.size) ){
+        pond_bot = -5.0-(((double)pool.size-1.0)*sin(acos(fabs((double)pool.position.x-(double)position.x)/((double)pool.size-1.0))));
+        if (position.y < pond_bot && pond_bot == pond_bot)
+            position.y = pond_bot;
+        if (pond_bot != pond_bot)
+            position.y = -4.2;
+    }
+    else if (position.y < -4.0)
+        position.y = -4.0;    
 }
 
 void Ball::tick_down() {

@@ -9,6 +9,7 @@ public:
     Pool() {}
     Pool(color_t color ,float x ,float y);
     glm::vec3 position;
+    int size;
     float rotation;
     void draw(glm::mat4 VP);
     void set_position(float x, float y);

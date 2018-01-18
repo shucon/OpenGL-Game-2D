@@ -1,9 +1,9 @@
 #include "plank.h"
 #include "main.h"
 
-Plank::Plank(float x, float y, color_t color) {
+Plank::Plank(float x, float y, color_t color , float rotation) {
     this->position = glm::vec3(x, y, 0);
-    this->rotation = 60;
+    this->rotation = rotation;
     speed = 0.1;
     plank_size = 2.0;
     plank_width = 0.5;
@@ -29,8 +29,11 @@ Plank::Plank(float x, float y, color_t color) {
     this->object = create3DObject(GL_TRIANGLES, 6, g_vertex_buffer_data, color, GL_FILL);
 }
 
-void Plank::tick() {
-    this->position.x += speed;
+void Plank::tick(float pos , float size) {
+    if (this->rotation == 60)
+        this->position.x = pos - size*cos(30*3.141/180);
+    else
+        this->position.x = pos + size*cos(30*3.141/180);    
     // this->position.y -= speed;
 }
 
@@ -51,9 +54,7 @@ void Plank::set_position(float x, float y) {
 }
 
 bounding_box_t Plank::bounding_box() {
-    // printf("%lf",this->size);
     float x = this->position.x, y = this->position.y;
-    // 1 is the ball size
     bounding_box_t bbox = { x, y, 1, 1 };
     return bbox;
 }

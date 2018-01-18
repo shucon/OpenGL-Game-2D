@@ -3,11 +3,11 @@
 
 Pool::Pool(color_t color ,float x ,float y) {
     this->position = glm::vec3(x, y, 0);
-    int n =100 ,i,count=0;
+    int n =200 ,i,count=0;
     static GLfloat g_vertex_buffer_data[10000];
     float angle = 360/n;
-    int size = 2;
-    for(i=n/2+10;i<=n+19;i++){
+    size = 3;
+    for(i=n-20;i<=2*n-41;i++){
         float angle_t = angle*i;
         g_vertex_buffer_data[count]=size*cos(angle_t*3.141/180);
         g_vertex_buffer_data[count+1]=size*sin(angle_t*3.141/180);

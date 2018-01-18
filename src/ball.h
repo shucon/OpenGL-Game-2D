@@ -1,5 +1,5 @@
 #include "main.h"
-
+#include "pool.h"
 #ifndef BALL_H
 #define BALL_H
 
@@ -15,11 +15,12 @@ public:
     void set_position(float x, float y);
     void tick_left();
     void tick_right();
-    void tick_up();
+    void tick_up(Pool pool);
     void tick_down();
     double speed;
     double launch_speed;
     double gravity;
+    double pond_bot;
     bounding_box_t bounding_box();
 private:
     VAO *object;
