@@ -10,6 +10,7 @@ public:
     Ball(float x, float y, color_t color ,float size);
     glm::vec3 position;
     float rotation;
+    float size;
     void draw(glm::mat4 VP);
     void set_position(float x, float y);
     void tick_left();

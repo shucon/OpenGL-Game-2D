@@ -70,7 +70,9 @@ void Ball::tick_down() {
 }
 
 bounding_box_t Ball::bounding_box() {
+    // printf("%lf",this->size);
     float x = this->position.x, y = this->position.y;
-    bounding_box_t bbox = { x, y, 0.4, 0.4 };
+    // 1 is the ball size
+    bounding_box_t bbox = { x, y, 1, 1 };
     return bbox;
 }

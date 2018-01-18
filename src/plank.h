@@ -1,23 +1,25 @@
 #include "main.h"
 
-#ifndef VILLAIN_H
-#define VILLAIN_H
+#ifndef PLANK_H
+#define PLANK_H
 
 
-class Villain {
+class Plank {
 public:
-    Villain() {}
-    Villain(float x, float y, color_t color ,float size);
+    Plank() {}
+    Plank(float x, float y, color_t color);
     glm::vec3 position;
-    float size;
+    float plank_size;
+    float plank_width;
     float rotation;
+    float size;
+    void tick();
     void draw(glm::mat4 VP);
     void set_position(float x, float y);
-    void tick();
     double speed;
     bounding_box_t bounding_box();
 private:
     VAO *object;
 };
 
-#endif // VILLAIN_H
+#endif

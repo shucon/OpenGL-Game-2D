@@ -58,6 +58,6 @@ void Villain::tick() {
 
 bounding_box_t Villain::bounding_box() {
     float x = this->position.x, y = this->position.y;
-    bounding_box_t bbox = { x, y, 0.4, 0.4 };
+    bounding_box_t bbox = { x, y, this->size, this->size };
     return bbox;
 }
