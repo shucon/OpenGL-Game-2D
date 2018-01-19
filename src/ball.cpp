@@ -57,15 +57,22 @@ void Ball::tick_right() {
     // this->position.y -= speed;
 }
 
-void Ball::tick_up(Pool pool) {
+void Ball::tick_up(Pool pool,Trampoline jump) {
     this->position.y += launch_speed;
     launch_speed -= gravity;
+    if (position.y < -10 + 5 + 1.0 + jump.size + jump.board && position.x>jump.position.x-jump.size-jump.board-1)
+        position.y = -10 + 5 + 1.0 + jump.size + jump.board -0.3;
     if (position.y < -4.0 && (position.x < pool.position.x - (double)pool.size) && (position.x > pool.position.x + (double)pool.size) )
         position.y = -4.0;
     else if (position.y < -4.0 && (position.x > pool.position.x - (double)pool.size) && (position.x < pool.position.x + (double)pool.size) ){
+        if(position.x < pool.position.x)
+            position.x += speed/2;        
+        else
+            position.x -= speed/2;        
         pond_bot = -5.0-(((double)pool.size-1.0)*sin(acos(fabs((double)pool.position.x-(double)position.x)/((double)pool.size-1.0))));
-        if (position.y < pond_bot && pond_bot == pond_bot)
+        if (position.y < pond_bot && pond_bot == pond_bot){
             position.y = pond_bot;
+        }
         if (pond_bot != pond_bot)
             position.y = -4.2;
     }

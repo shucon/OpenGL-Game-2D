@@ -5,6 +5,7 @@
 #include "ground.h"
 #include "pool.h"
 #include "plank.h"
+#include "trampoline.h"
 #include <stdlib.h>
 
 using namespace std;
@@ -22,6 +23,7 @@ Villain vill[1000];
 Ground ground;
 Pool pool;
 Plank plank[10];
+Trampoline jump;
 int vill_cnt = 10 , depth = 5 , screen_size = 10,plank_cnt = 0;
 float screen_zoom = 1, screen_center_x = 0, screen_center_y = 0;
 
@@ -63,6 +65,7 @@ void draw() {
     }
     ground.draw(VP);
     pool.draw(VP);
+    jump.draw(VP);
     ball1.draw(VP);    
     for(int i = 0 ; i < plank_cnt ; i++){
         plank[i].draw(VP);
@@ -79,15 +82,19 @@ void tick_input(GLFWwindow *window) {
     }
 
     if (right) {
+        if (ball1.position.y == -4.0 && ball1.position.x>=jump.position.x-jump.size-jump.board-1)
+        ball1.position.x=jump.position.x-jump.size-jump.board-1;
+        else
         ball1.tick_right();
     }
 
     if (up) {
         if(ball1.position.y == -screen_size + depth + 1.0 && (ball1.position.x < -3 || ball1.position.x > 3))
             ball1.launch_speed = 0.4;
-        printf("%lf %lf\n",ball1.position.y,ball1.pond_bot);
-        if((float)ball1.position.y == (float)ball1.pond_bot)
+        if((float)ball1.position.y == (float)ball1.pond_bot) //POOL
             ball1.launch_speed = 0.25;        
+        if(ball1.position.y == -screen_size + depth + 1.0 + jump.size + jump.board - 0.3 && ball1.position.x > jump.position.x-jump.size-jump.board ) //TRAMPOLINE        
+            ball1.launch_speed = 0.5;        
     }
 
     // if (down) {
@@ -97,7 +104,7 @@ void tick_input(GLFWwindow *window) {
 
 void tick_elements() {
 
-    ball1.tick_up(pool);
+    ball1.tick_up(pool,jump);
     for(int i = 0 ; i < vill_cnt ; i++){
         vill[i].tick();     
         if (detect_collision(ball1.bounding_box(), vill[i].bounding_box()) && ball1.launch_speed < 0) {
@@ -142,6 +149,7 @@ void initGL(GLFWwindow *window, int width, int height) {
     }
     ground = Ground(COLOR_BLACK,screen_size,depth);
     pool = Pool(COLOR_BLUE,0,-depth);
+    jump = Trampoline(COLOR_RED,8,-3.8);
     // Create and compile our GLSL program from the shaders
     programID = LoadShaders("Sample_GL.vert", "Sample_GL.frag");
     // Get a handle for our "MVP" uniform
@@ -166,8 +174,8 @@ void initGL(GLFWwindow *window, int width, int height) {
 
 int main(int argc, char **argv) {
     srand(time(0));
-    int width  = 600;
-    int height = 600;
+    int width  = 800;
+    int height = 800;
 
     window = initGLFW(width, height);
 

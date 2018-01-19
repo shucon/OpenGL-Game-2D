@@ -1,5 +1,6 @@
 #include "main.h"
 #include "pool.h"
+#include "trampoline.h"
 #ifndef BALL_H
 #define BALL_H
 
@@ -15,7 +16,7 @@ public:
     void set_position(float x, float y);
     void tick_left();
     void tick_right();
-    void tick_up(Pool pool);
+    void tick_up(Pool pool,Trampoline jump);
     void tick_down();
     double speed;
     double launch_speed;
