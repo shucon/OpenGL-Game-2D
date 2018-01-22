@@ -6,6 +6,8 @@
 #include "pool.h"
 #include "plank.h"
 #include "trampoline.h"
+#include "magnet.h"
+#include "porcupine.h"
 #include <stdlib.h>
 
 using namespace std;
@@ -24,7 +26,11 @@ Ground ground;
 Pool pool;
 Plank plank[10];
 Trampoline jump;
+Magnet magnet[2];
+Porcupine porc;
 int vill_cnt = 10 , depth = 5 , screen_size = 10,plank_cnt = 0;
+unsigned int time_cnt = 0;
+int porc_flag = 0 , magnet_flag = 0;
 float screen_zoom = 1, screen_center_x = 0, screen_center_y = 0;
 
 Timer t60(1.0 / 60);
@@ -60,6 +66,9 @@ void draw() {
     glm::mat4 MVP;  // MVP = Projection * View * Model
 
     // Scene render
+
+    magnet[0].draw(VP);
+    magnet[1].draw(VP);
     for(int i = 0 ; i < vill_cnt ; i++){
         vill[i].draw(VP);
     }
@@ -70,6 +79,7 @@ void draw() {
     for(int i = 0 ; i < plank_cnt ; i++){
         plank[i].draw(VP);
     }
+    porc.draw(VP);
 }
 
 void tick_input(GLFWwindow *window) {
@@ -89,12 +99,13 @@ void tick_input(GLFWwindow *window) {
     }
 
     if (up) {
+        // printf("%lf  %lf\n",ball1.position.y,-screen_size + depth + 1.0 + jump.size + jump.board - 0.3 );
         if(ball1.position.y == -screen_size + depth + 1.0 && (ball1.position.x < -3 || ball1.position.x > 3))
             ball1.launch_speed = 0.4;
         if((float)ball1.position.y == (float)ball1.pond_bot) //POOL
             ball1.launch_speed = 0.25;        
-        if(ball1.position.y == -screen_size + depth + 1.0 + jump.size + jump.board - 0.3 && ball1.position.x > jump.position.x-jump.size-jump.board ) //TRAMPOLINE        
-            ball1.launch_speed = 0.5;        
+        // if((float)ball1.position.y == (float)(-screen_size + depth + 1.0 + jump.size + jump.board - 0.3) && ball1.position.x > jump.position.x-jump.size-jump.board ) //TRAMPOLINE        
+        //     ball1.launch_speed = 0.5;        
     }
 
     // if (down) {
@@ -103,20 +114,69 @@ void tick_input(GLFWwindow *window) {
 }
 
 void tick_elements() {
+    
+    if (ball1.position.x > porc.position.x && ball1.position.x < porc.position.x+3 && ball1.position.y <= -3){
+        ball1.position.x = -8;
+        ball1.position.y = -5;
+        ball1.launch_speed = 0;
+        porc.position.x = -100;
+    }
+
+    if(time_cnt % 300 == 0 && porc_flag %2 ==0){
+        porc.position.x = -rand()%3 - 6;
+        if(porc_flag % 8 == 0)
+            porc.position.x = 3;
+        porc_flag++;        
+    }
+
+    else if(time_cnt % 300 == 0 && porc_flag%2==1){
+        porc.position.x = -100;
+        porc_flag++;
+        if (time_cnt > 10000)
+            time_cnt = 0;
+    }
+
+    if (magnet[0].position.x < 0 && magnet[0].position.x > -10)
+        if(ball1.position.x > -10)
+        ball1.position.x -= 0.01;        
+    if (magnet[0].position.x > 0)
+        if(ball1.position.x < 10)    
+        ball1.position.x += 0.01;
+    
+    if(time_cnt % 700 == 0 && magnet_flag %2 ==0){
+        magnet[0].position.x = -8;
+        magnet[1].position.x = magnet[0].position.x;
+        magnet[0].rotation = -90;
+        magnet[1].rotation = -90;
+        if(magnet_flag % 7 == 0){
+            magnet[0].position.x = 8;
+            magnet[1].position.x = magnet[0].position.x;
+            magnet[0].rotation = 90;
+            magnet[1].rotation = 90;
+            ball1.position.x += 0.05;
+        }
+        magnet_flag++;        
+    }
+
+    else if(time_cnt % 700 == 0 && magnet_flag%2==1){
+        magnet[0].position.x = -100;
+        magnet[1].position.x = -100;
+        magnet_flag++;
+    }
 
     ball1.tick_up(pool,jump);
     for(int i = 0 ; i < vill_cnt ; i++){
         vill[i].tick();     
         if (detect_collision(ball1.bounding_box(), vill[i].bounding_box()) && ball1.launch_speed < 0) {
             vill[i].position.x = 11;
-            ball1.launch_speed = -1.1*ball1.launch_speed;
+            ball1.launch_speed = -ball1.launch_speed+0.1;
         }
     }
 
     for(int i = 0 ; i < plank_cnt ; i++){
         plank[i].tick(vill[i*5].position.x , 0.9);
     }
-
+    time_cnt++;
 }
 
 /* Initialize the OpenGL rendering properties */
@@ -137,7 +197,7 @@ void initGL(GLFWwindow *window, int width, int height) {
         double tmp_speed = (double)(i%10+1)/100;
         vill[i]       = Villain(x, y, COLOR_GREEN,ball_size);
         if (i%5 == 0){
-            printf("%d",plank_cnt);
+            // printf("%d",plank_cnt);
             if(i%2 == 0)
                 plank[plank_cnt]       = Plank(x - ball_size*cos(30*3.141/180), y + ball_size*sin(30*3.141/180), COLOR_BROWN , 60);
             else
@@ -150,6 +210,9 @@ void initGL(GLFWwindow *window, int width, int height) {
     ground = Ground(COLOR_BLACK,screen_size,depth);
     pool = Pool(COLOR_BLUE,0,-depth);
     jump = Trampoline(COLOR_RED,8,-3.8);
+    magnet[0] = Magnet(COLOR_MAGNET,2,-6,4);
+    magnet[1] = Magnet(COLOR_BACKGROUND,0.5,-6,4);
+    porc = Porcupine(COLOR_MAGNET,3,0,-(screen_size-depth));
     // Create and compile our GLSL program from the shaders
     programID = LoadShaders("Sample_GL.vert", "Sample_GL.frag");
     // Get a handle for our "MVP" uniform
