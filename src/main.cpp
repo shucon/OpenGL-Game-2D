@@ -8,6 +8,8 @@
 #include "trampoline.h"
 #include "magnet.h"
 #include "porcupine.h"
+#include "score.h"
+#include "level.h"
 #include <stdlib.h>
 
 using namespace std;
@@ -28,10 +30,12 @@ Plank plank[10];
 Trampoline jump;
 Magnet magnet[2];
 Porcupine porc;
-int vill_cnt = 10 , depth = 5 , screen_size = 10,plank_cnt = 0;
-unsigned int time_cnt = 0;
+Score score_dis;
+Level level;
+int vill_cnt = 15 , depth = 5 , screen_size = 10,plank_cnt = 0,scr_cnt=0,lvl_cnt=1;
+unsigned int time_stamp = 0 , time_cnt = 0;
 int porc_flag = 0 , magnet_flag = 0;
-float screen_zoom = 1, screen_center_x = 0, screen_center_y = 0;
+float screen_zoom = 1, screen_center_x = 0, screen_center_y = 0 , pi = 3.141;
 
 Timer t60(1.0 / 60);
 
@@ -80,6 +84,8 @@ void draw() {
         plank[i].draw(VP);
     }
     porc.draw(VP);
+    score_dis.draw(VP);
+    level.draw (VP);
 }
 
 void tick_input(GLFWwindow *window) {
@@ -87,12 +93,12 @@ void tick_input(GLFWwindow *window) {
     int right = glfwGetKey(window, GLFW_KEY_RIGHT);
     int up = glfwGetKey(window, GLFW_KEY_UP);
     // int down = glfwGetKey(window, GLFW_KEY_DOWN); //only for testing
-    if (left) {
+    if (left && time_stamp==0) {
         ball1.tick_left();
     }
 
-    if (right) {
-        if (ball1.position.y == -4.0 && ball1.position.x>=jump.position.x-jump.size-jump.board-1)
+    if (right && time_stamp==0) {
+        if (ball1.position.y == -4.0 && ball1.position.x>=jump.position.x-jump.size-jump.board-1 && ball1.position.x<=jump.position.x+jump.size+jump.board+1)
         ball1.position.x=jump.position.x-jump.size-jump.board-1;
         else
         ball1.tick_right();
@@ -112,9 +118,55 @@ void tick_input(GLFWwindow *window) {
     //     ball1.tick_down(); // only for testing
     // }
 }
+void span_screen(){
+    reset_screen();
+}
+
+void zoom_screen(int type){
+    if(type == 1 && screen_zoom > 0.4)
+        screen_zoom -= 0.03;
+    else if(type == -1 && screen_zoom < 1.6){
+        screen_zoom += 0.03;
+    }
+}
+
+void touch_plank(){
+    float x1, x2, y1, y2, slope, m1, b, d;
+    for(int i=0;i<plank_cnt;i++){
+        float plank_x = plank[i].position.x;
+        float plank_y = plank[i].position.y;
+        float plank_l = plank[i].plank_size;
+        float plank_w = plank[i].plank_width;
+        slope = plank[i].rotation;
+        m1 = tan(slope*pi/180);
+        x1 = ball1.position.x;
+        y1 = ball1.position.y;
+        y2 = (m1*x1 - y1 - m1*plank_x + plank_y)/(1+m1*m1) + y1;
+        x2 = (-1*m1)*(m1*x1 - y1 - m1*plank_x + plank_y)/(1+m1*m1) + x1;
+        d = abs(m1*x1 - y1 - m1*plank_x + plank_y)/sqrt(1+m1*m1);
+        b = (x2-plank_x)*(x2-plank_x)+(y2-plank_y)*(y2-plank_y);
+        if(b<= plank_l*plank_l){
+            if(d<=ball1.size && ball1.launch_speed<=0){
+                ball1.launch_speed = -1*ball1.launch_speed;
+                if(slope<=90 && slope>0)
+                    ball1.speedx = -0.15;
+                else
+                    ball1.speedx = 0.15;
+                time_stamp = time_cnt;
+            }
+        }
+    }
+}
 
 void tick_elements() {
     
+    span_screen();
+    if (ball1.position.y <= -4){
+        ball1.speedx = 0;
+        time_stamp = 0 ;
+    }
+    ball1.position.x += ball1.speedx;
+    touch_plank();
     if (ball1.position.x > porc.position.x && ball1.position.x < porc.position.x+3 && ball1.position.y <= -3){
         ball1.position.x = -8;
         ball1.position.y = -5;
@@ -122,28 +174,28 @@ void tick_elements() {
         porc.position.x = -100;
     }
 
-    if(time_cnt % 300 == 0 && porc_flag %2 ==0){
+    if(time_cnt % 300 == 0 && porc_flag %2 ==0 && lvl_cnt > 1){
         porc.position.x = -rand()%3 - 6;
         if(porc_flag % 8 == 0)
             porc.position.x = 3;
         porc_flag++;        
     }
 
-    else if(time_cnt % 300 == 0 && porc_flag%2==1){
+    else if(time_cnt % 300 == 0 && porc_flag%2==1 && lvl_cnt > 1){
         porc.position.x = -100;
         porc_flag++;
         if (time_cnt > 10000)
             time_cnt = 0;
     }
 
-    if (magnet[0].position.x < 0 && magnet[0].position.x > -10)
+    if (magnet[0].position.x < 0 && magnet[0].position.x > -10 && lvl_cnt > 2)
         if(ball1.position.x > -10)
-        ball1.position.x -= 0.01;        
-    if (magnet[0].position.x > 0)
+        ball1.position.x -= 0.01*lvl_cnt;        
+    if (magnet[0].position.x > 0 && lvl_cnt > 2)
         if(ball1.position.x < 10)    
-        ball1.position.x += 0.01;
+        ball1.position.x += 0.01*lvl_cnt;
     
-    if(time_cnt % 700 == 0 && magnet_flag %2 ==0){
+    if(time_cnt % 700 == 0 && magnet_flag %2 ==0 && lvl_cnt > 2){
         magnet[0].position.x = -8;
         magnet[1].position.x = magnet[0].position.x;
         magnet[0].rotation = -90;
@@ -158,7 +210,7 @@ void tick_elements() {
         magnet_flag++;        
     }
 
-    else if(time_cnt % 700 == 0 && magnet_flag%2==1){
+    else if(time_cnt % 700 == 0 && magnet_flag%2==1 && lvl_cnt > 2){
         magnet[0].position.x = -100;
         magnet[1].position.x = -100;
         magnet_flag++;
@@ -169,7 +221,15 @@ void tick_elements() {
         vill[i].tick();     
         if (detect_collision(ball1.bounding_box(), vill[i].bounding_box()) && ball1.launch_speed < 0) {
             vill[i].position.x = 11;
-            ball1.launch_speed = -ball1.launch_speed+0.1;
+            ball1.launch_speed = -ball1.launch_speed;
+            ball1.speedx = 0;
+            time_stamp = 0 ;        
+            score_dis.add(1);
+            scr_cnt++;
+            if (scr_cnt%5 == 0){
+                lvl_cnt++;
+                level.add(1);
+            }
         }
     }
 
@@ -212,7 +272,12 @@ void initGL(GLFWwindow *window, int width, int height) {
     jump = Trampoline(COLOR_RED,8,-3.8);
     magnet[0] = Magnet(COLOR_MAGNET,2,-6,4);
     magnet[1] = Magnet(COLOR_BACKGROUND,0.5,-6,4);
+    magnet[0].position.x = -100;
+    magnet[1].position.x = -100;
     porc = Porcupine(COLOR_MAGNET,3,0,-(screen_size-depth));
+    porc.position.x = -100;
+    score_dis.update(0);
+    level.update(1);
     // Create and compile our GLSL program from the shaders
     programID = LoadShaders("Sample_GL.vert", "Sample_GL.frag");
     // Get a handle for our "MVP" uniform

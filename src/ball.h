@@ -19,6 +19,7 @@ public:
     void tick_up(Pool pool,Trampoline jump);
     void tick_down();
     double speed;
+    double speedx;
     double launch_speed;
     double gravity;
     double pond_bot;

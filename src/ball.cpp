@@ -4,6 +4,7 @@
 Ball::Ball(float x, float y, color_t color ,float size) {
     this->position = glm::vec3(x, y, 0);
     this->rotation = 0;
+    this->size = size;
     speed = 0.1;
     gravity = 0.01;
     launch_speed = 0;
@@ -60,7 +61,7 @@ void Ball::tick_right() {
 void Ball::tick_up(Pool pool,Trampoline jump) {
     this->position.y += launch_speed;
     launch_speed -= gravity;
-    if (position.y < -10 + 5 + 1.0 + jump.size + jump.board && position.x>jump.position.x-jump.size-jump.board)
+    if (position.y < -10 + 5 + 1.0 + jump.size + jump.board && position.x>jump.position.x-jump.size-jump.board && position.x<jump.position.x+jump.size+jump.board)
         launch_speed = -1.1*launch_speed;
     if (position.y < -4.0 && (position.x < pool.position.x - (double)pool.size) && (position.x > pool.position.x + (double)pool.size) )
         position.y = -4.0;

@@ -1,11 +1,7 @@
-Graphics Boilerplate Code
-=========================
+OpenGL Assignment
 
-This is boilerplate code for the assignments which might be helpful.
+Installation Instructions 
 
-
-License
--------
-The MIT License https://meghprkh.mit-license.org/
-
-Copyright &copy; 2018 Megh Parikh <meghprkh@gmail.com>
+1) sudo apt install libglew-dev libglfw3-dev libglm-dev cmake pkg-config
+2) Download QtCreator
+3) Make and Run :)

@@ -33,6 +33,8 @@ void keyboard(GLFWwindow *window, int key, int scancode, int action, int mods);
 void keyboardChar(GLFWwindow *window, unsigned int key);
 void mouseButton(GLFWwindow *window, int button, int action, int mods);
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
+void span_screen();
+void zoom_screen(int type);
 
 // other_handlers.cpp
 void error_callback(int error, const char *description);
